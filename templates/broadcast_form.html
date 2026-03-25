@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Kirim Broadcast - SmartBot{% endblock %}
+
+{% block content %}
+<div class="topbar">
+    <h2><i class="fas fa-bullhorn"></i> Kirim Broadcast</h2>
+    <a href="{{ url_for('admin_broadcast_list') }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left"></i> Kembali</a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="form-card">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Broadcast akan dikirim ke <strong>{{ contacts_count }}</strong> kontak aktif (non-blocked, subscribed).
+            </div>
+
+            <form method="POST" onsubmit="return confirm('Kirim broadcast ke {{ contacts_count }} kontak?')">
+                <div class="mb-3">
+                    <label class="form-label">Nama Broadcast</label>
+                    <input type="text" class="form-control" name="name" required placeholder="Contoh: Promo Akhir Tahun">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Pesan</label>
+                    <textarea class="form-control" name="message" rows="6" required placeholder="Tulis pesan broadcast..."></textarea>
+                    <small class="text-muted">Gunakan *teks* untuk bold, _teks_ untuk italic</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Filter by Tags <small class="text-muted">(opsional, pisahkan koma)</small></label>
+                    <input type="text" class="form-control" name="target_tags" placeholder="vip,customer">
+                </div>
+                <button type="submit" class="btn btn-success btn-lg w-100">
+                    <i class="fas fa-paper-plane"></i> Kirim Broadcast
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

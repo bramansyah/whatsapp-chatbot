@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SmartBot Admin{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #25D366;
+            --primary-dark: #128C7E;
+            --dark: #1a1a2e;
+            --darker: #16213e;
+            --sidebar-bg: #0f3460;
+            --accent: #e94560;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed; left: 0; top: 0; bottom: 0;
+            width: 260px; background: var(--dark);
+            color: #fff; z-index: 1000; transition: .3s;
+            overflow-y: auto;
+        }
+        .sidebar .brand {
+            padding: 20px; text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,.1);
+        }
+        .sidebar .brand h3 { margin: 0; color: var(--primary); font-weight: 700; }
+        .sidebar .brand small { color: #aaa; }
+        .sidebar .nav-menu { list-style: none; padding: 10px 0; margin: 0; }
+        .sidebar .nav-menu li a {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 24px; color: #ccc; text-decoration: none;
+            transition: .2s; font-size: 14px;
+        }
+        .sidebar .nav-menu li a:hover,
+        .sidebar .nav-menu li a.active {
+            background: rgba(37,211,102,.15); color: var(--primary);
+            border-left: 3px solid var(--primary);
+        }
+        .sidebar .nav-menu li a i { width: 20px; text-align: center; }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px; padding: 20px; min-height: 100vh;
+        }
+
+        /* Top Bar */
+        .topbar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 24px; padding: 16px 24px;
+            background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.05);
+        }
+        .topbar h2 { margin: 0; font-size: 22px; color: var(--dark); }
+
+        /* Cards */
+        .stat-card {
+            background: #fff; border-radius: 12px; padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.05); transition: .3s;
+            border-left: 4px solid var(--primary);
+        }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
+        .stat-card .number { font-size: 32px; font-weight: 700; color: var(--dark); }
+        .stat-card .label { color: #888; font-size: 14px; }
+        .stat-card .icon { font-size: 36px; color: var(--primary); opacity: .3; }
+        .stat-card.danger { border-left-color: var(--accent); }
+        .stat-card.danger .icon { color: var(--accent); }
+        .stat-card.info { border-left-color: #3498db; }
+        .stat-card.info .icon { color: #3498db; }
+        .stat-card.warning { border-left-color: #f39c12; }
+        .stat-card.warning .icon { color: #f39c12; }
+
+        /* Tables */
+        .data-table {
+            background: #fff; border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.05); overflow: hidden;
+        }
+        .data-table .table { margin: 0; }
+        .data-table .table th {
+            background: var(--darker); color: #fff;
+            border: none; font-size: 13px; font-weight: 500;
+        }
+        .data-table .table td { font-size: 13px; vertical-align: middle; }
+
+        /* Badges */
+        .badge-status { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-pending { background: #fff3cd; color: #856404; }
+        .badge-confirmed { background: #d1ecf1; color: #0c5460; }
+        .badge-shipped { background: #cce5ff; color: #004085; }
+        .badge-delivered { background: #d4edda; color: #155724; }
+        .badge-cancelled { background: #f8d7da; color: #721c24; }
+
+        /* Chat Bubble */
+        .chat-container { max-height: 500px; overflow-y: auto; padding: 16px; }
+        .chat-bubble {
+            max-width: 70%; padding: 10px 14px; border-radius: 12px;
+            margin-bottom: 8px; font-size: 13px; position: relative;
+        }
+        .chat-inbound {
+            background: #fff; align-self: flex-start;
+            border: 1px solid #e0e0e0; border-bottom-left-radius: 4px;
+        }
+        .chat-outbound {
+            background: #dcf8c6; align-self: flex-end; margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-time { font-size: 10px; color: #999; margin-top: 4px; }
+
+        /* Forms */
+        .form-card {
+            background: #fff; border-radius: 12px; padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.05);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { width: 0; }
+            .main-content { margin-left: 0; }
+        }
+
+        /* Flash Messages */
+        .flash-message {
+            position: fixed; top: 20px; right: 20px; z-index: 9999;
+            min-width: 300px; animation: slideIn .3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if session.get('admin_id') %}
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="brand">
+            <h3><i class="fab fa-whatsapp"></i> SmartBot</h3>
+            <small>Admin Panel v2.0</small>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="{{ url_for('admin_dashboard') }}" class="{% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a></li>
+            <li><a href="{{ url_for('admin_contacts') }}" class="{% if 'contact' in request.endpoint|default('') %}active{% endif %}">
+                <i class="fas fa-users"></i> Kontak
+            </a></li>
+            <li><a href="{{ url_for('admin_product_list') }}" class="{% if 'product' in request.endpoint|default('') %}active{% endif %}">
+                <i class="fas fa-box"></i> Produk
+            </a></li>
+            <li><a href="{{ url_for('admin_order_list') }}" class="{% if 'order' in request.endpoint|default('') %}active{% endif %}">
+                <i class="fas fa-shopping-cart"></i> Pesanan
+            </a></li>
+            <li><a href="{{ url_for('admin_faq_list') }}" class="{% if 'faq' in request.endpoint|default('') %}active{% endif %}">
+                <i class="fas fa-question-circle"></i> FAQ
+            </a></li>
+            <li><a href="{{ url_for('admin_auto_reply_list') }}" class="{% if 'auto_reply' in request.endpoint|default('') %}active{% endif %}">
+                <i class="fas fa-robot"></i> Auto Reply
+            </a></li>
+            <li><a href="{{ url_for('admin_broadcast_list') }}" class="{% if 'broadcast' in request.endpoint|default('') %}active{% endif %}">
+                <i class="fas fa-bullhorn"></i> Broadcast
+            </a></li>
+            <li style="margin-top: auto; border-top: 1px solid rgba(255,255,255,.1);">
+                <a href="{{ url_for('admin_logout') }}">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="flash-message alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <div class="{% if session.get('admin_id') %}main-content{% endif %}">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-dismiss flash messages
+        setTimeout(() => {
+            document.querySelectorAll('.flash-message').forEach(el => el.remove());
+        }, 5000);
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Pesanan {{ order.order_number }} - SmartBot{% endblock %}
+
+{% block content %}
+<div class="topbar">
+    <h2><i class="fas fa-receipt"></i> {{ order.order_number }}</h2>
+    <a href="{{ url_for('admin_order_list') }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left"></i> Kembali</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="form-card">
+            <h5 class="mb-3">Detail Pesanan</h5>
+            <table class="table table-sm">
+                <tr><td class="text-muted" width="35%">No. Pesanan</td><td><strong>{{ order.order_number }}</strong></td></tr>
+                <tr><td class="text-muted">Pelanggan</td><td>{{ contact.name if contact else '-' }} ({{ contact.phone_number if contact else '-' }})</td></tr>
+                <tr><td class="text-muted">Alamat</td><td>{{ order.shipping_address or '-' }}</td></tr>
+                <tr><td class="text-muted">Pembayaran</td><td>{{ order.payment_method or '-' }}</td></tr>
+                <tr><td class="text-muted">Catatan</td><td>{{ order.notes or '-' }}</td></tr>
+                <tr><td class="text-muted">Tanggal</td><td>{{ order.created_at.strftime('%d/%m/%Y %H:%M') if order.created_at else '-' }}</td></tr>
+                <tr><td class="text-muted">Status</td><td><span class="badge-status badge-{{ order.status }}">{{ order.status.upper() }}</span></td></tr>
+            </table>
+
+            <h6 class="mt-4 mb-2">Item Pesanan</h6>
+            <table class="table table-sm table-bordered">
+                <thead><tr><th>Produk</th><th>Qty</th><th>Harga</th><th>Subtotal</th></tr></thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ item.get('name', '-') }}</td>
+                        <td>{{ item.get('quantity', 0) }}</td>
+                        <td>Rp {{ '{:,.0f}'.format(item.get('price', 0)) }}</td>
+                        <td>Rp {{ '{:,.0f}'.format(item.get('price', 0) * item.get('quantity', 0)) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr><td colspan="3" class="text-end"><strong>Total</strong></td><td><strong>Rp {{ '{:,.0f}'.format(order.total_price) }}</strong></td></tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="form-card">
+            <h5 class="mb-3">Update Status</h5>
+            <form method="POST" action="{{ url_for('admin_order_update_status', order_id=order.id) }}">
+                <div class="mb-3">
+                    <select class="form-select" name="status">
+                        <option value="pending" {{ 'selected' if order.status == 'pending' else '' }}>⏳ Pending</option>
+                        <option value="confirmed" {{ 'selected' if order.status == 'confirmed' else '' }}>✅ Confirmed</option>
+                        <option value="shipped" {{ 'selected' if order.status == 'shipped' else '' }}>🚚 Shipped</option>
+                        <option value="delivered" {{ 'selected' if order.status == 'delivered' else '' }}>📬 Delivered</option>
+                        <option value="cancelled" {{ 'selected' if order.status == 'cancelled' else '' }}>❌ Cancelled</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success w-100">
+                    <i class="fas fa-save"></i> Update & Notifikasi
+                </button>
+                <small class="text-muted d-block mt-2">Pelanggan akan menerima notifikasi WhatsApp otomatis.</small>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

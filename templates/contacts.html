@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Kontak - SmartBot{% endblock %}
+
+{% block content %}
+<div class="topbar">
+    <h2><i class="fas fa-users"></i> Kontak</h2>
+    <form class="d-flex gap-2" method="GET">
+        <input type="text" class="form-control form-control-sm" name="search" placeholder="Cari nama/nomor..." value="{{ search }}" style="width:250px">
+        <button class="btn btn-sm btn-success"><i class="fas fa-search"></i></button>
+    </form>
+</div>
+
+<div class="data-table">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nama</th>
+                <th>Nomor HP</th>
+                <th>Total Pesan</th>
+                <th>Terakhir Chat</th>
+                <th>Status</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in contacts.items %}
+            <tr>
+                <td>{{ c.id }}</td>
+                <td><strong>{{ c.name }}</strong></td>
+                <td>{{ c.phone_number }}</td>
+                <td>{{ c.total_messages }}</td>
+                <td>{{ c.last_contact.strftime('%d/%m/%Y %H:%M') if c.last_contact else '-' }}</td>
+                <td>
+                    {% if c.is_blocked %}
+                    <span class="badge bg-danger">Diblokir</span>
+                    {% elif c.is_subscribed %}
+                    <span class="badge bg-success">Aktif</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Unsubscribed</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('admin_contact_detail', contact_id=c.id) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    {% if contacts.pages > 1 %}
+    <nav class="p-3">
+        <ul class="pagination pagination-sm justify-content-center">
+            {% for page_num in contacts.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+            <li class="page-item {{ 'active' if page_num == contacts.page else '' }}">
+                <a class="page-link" href="?page={{ page_num }}&search={{ search }}">{{ page_num }}</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

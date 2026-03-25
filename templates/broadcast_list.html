@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Broadcast - SmartBot{% endblock %}
+
+{% block content %}
+<div class="topbar">
+    <h2><i class="fas fa-bullhorn"></i> Broadcast Messages</h2>
+    <a href="{{ url_for('admin_broadcast_send') }}" class="btn btn-sm btn-success"><i class="fas fa-plus"></i> Buat Broadcast</a>
+</div>
+
+<div class="data-table">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nama</th>
+                <th>Pesan</th>
+                <th>Target</th>
+                <th>Terkirim</th>
+                <th>Gagal</th>
+                <th>Status</th>
+                <th>Tanggal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in broadcasts %}
+            <tr>
+                <td>{{ b.id }}</td>
+                <td><strong>{{ b.name }}</strong></td>
+                <td>{{ b.message_content[:50] }}{{ '...' if b.message_content|length > 50 else '' }}</td>
+                <td>{{ b.total_recipients }}</td>
+                <td><span class="badge bg-success">{{ b.sent_count }}</span></td>
+                <td><span class="badge bg-danger">{{ b.failed_count }}</span></td>
+                <td><span class="badge bg-{{ 'success' if b.status == 'completed' else 'warning' }}">{{ b.status }}</span></td>
+                <td>{{ b.created_at.strftime('%d/%m/%Y %H:%M') if b.created_at else '-' }}</td>
+            </tr>
+            {% endfor %}
+            {% if not broadcasts %}
+            <tr><td colspan="8" class="text-center text-muted py-4">Belum ada broadcast.</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

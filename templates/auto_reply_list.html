@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Auto Reply - SmartBot{% endblock %}
+
+{% block content %}
+<div class="topbar">
+    <h2><i class="fas fa-robot"></i> Auto Reply Rules</h2>
+    <a href="{{ url_for('admin_auto_reply_add') }}" class="btn btn-sm btn-success"><i class="fas fa-plus"></i> Tambah Rule</a>
+</div>
+
+<div class="data-table">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nama</th>
+                <th>Tipe Trigger</th>
+                <th>Trigger</th>
+                <th>Tipe Respon</th>
+                <th>Prioritas</th>
+                <th>Hit</th>
+                <th>Status</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in replies %}
+            <tr>
+                <td>{{ r.id }}</td>
+                <td><strong>{{ r.name }}</strong></td>
+                <td><span class="badge bg-secondary">{{ r.trigger_type }}</span></td>
+                <td><small>{{ r.trigger_value[:40] }}{{ '...' if r.trigger_value|length > 40 else '' }}</small></td>
+                <td><span class="badge bg-info">{{ r.response_type }}</span></td>
+                <td>{{ r.priority }}</td>
+                <td>{{ r.hit_count }}</td>
+                <td>
+                    {% if r.is_active %}
+                    <span class="badge bg-success">Aktif</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Nonaktif</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('admin_auto_reply_edit', reply_id=r.id) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
+                    <form method="POST" action="{{ url_for('admin_auto_reply_delete', reply_id=r.id) }}" style="display:inline" onsubmit="return confirm('Hapus rule ini?')">
+                        <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

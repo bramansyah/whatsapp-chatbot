@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Pesanan - SmartBot{% endblock %}
+
+{% block content %}
+<div class="topbar">
+    <h2><i class="fas fa-shopping-cart"></i> Manajemen Pesanan</h2>
+    <div class="d-flex gap-2">
+        <a href="?status=" class="btn btn-sm {{ 'btn-primary' if not status_filter else 'btn-outline-secondary' }}">Semua</a>
+        <a href="?status=pending" class="btn btn-sm {{ 'btn-warning' if status_filter == 'pending' else 'btn-outline-warning' }}">Pending</a>
+        <a href="?status=confirmed" class="btn btn-sm {{ 'btn-info' if status_filter == 'confirmed' else 'btn-outline-info' }}">Confirmed</a>
+        <a href="?status=shipped" class="btn btn-sm {{ 'btn-primary' if status_filter == 'shipped' else 'btn-outline-primary' }}">Shipped</a>
+        <a href="?status=delivered" class="btn btn-sm {{ 'btn-success' if status_filter == 'delivered' else 'btn-outline-success' }}">Delivered</a>
+    </div>
+</div>
+
+<div class="data-table">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>No. Pesanan</th>
+                <th>Kontak</th>
+                <th>Total</th>
+                <th>Pembayaran</th>
+                <th>Status</th>
+                <th>Tanggal</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for o in orders %}
+            <tr>
+                <td><strong>{{ o.order_number }}</strong></td>
+                <td>
+                    {% set contact = o.contact %}
+                    {{ contact.name if contact else 'Unknown' }}
+                </td>
+                <td>Rp {{ '{:,.0f}'.format(o.total_price) }}</td>
+                <td>{{ o.payment_method or '-' }}</td>
+                <td><span class="badge-status badge-{{ o.status }}">{{ o.status.upper() }}</span></td>
+                <td>{{ o.created_at.strftime('%d/%m/%Y %H:%M') if o.created_at else '-' }}</td>
+                <td>
+                    <a href="{{ url_for('admin_order_detail', order_id=o.id) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye"></i> Detail
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+            {% if not orders %}
+            <tr><td colspan="7" class="text-center text-muted py-4">Belum ada pesanan.</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

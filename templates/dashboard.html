@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - SmartBot{% endblock %}
+
+{% block content %}
+<div class="topbar">
+    <h2><i class="fas fa-chart-line"></i> Dashboard</h2>
+    <span class="text-muted">Selamat datang, {{ session.admin_username }}!</span>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="number">{{ total_contacts }}</div>
+                    <div class="label">Total Kontak</div>
+                </div>
+                <div class="icon"><i class="fas fa-users"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card info">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="number">{{ total_messages }}</div>
+                    <div class="label">Total Pesan</div>
+                </div>
+                <div class="icon"><i class="fas fa-envelope"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card warning">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="number">{{ today_messages }}</div>
+                    <div class="label">Pesan Hari Ini</div>
+                </div>
+                <div class="icon"><i class="fas fa-comment-dots"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card danger">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="number">{{ pending_orders }}</div>
+                    <div class="label">Pesanan Pending</div>
+                </div>
+                <div class="icon"><i class="fas fa-shopping-cart"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Chart -->
+    <div class="col-md-8">
+        <div class="data-table p-4">
+            <h5 class="mb-3"><i class="fas fa-chart-bar"></i> Pesan 7 Hari Terakhir</h5>
+            <canvas id="messageChart" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- Active Sessions -->
+    <div class="col-md-4">
+        <div class="data-table p-4">
+            <h5 class="mb-3"><i class="fas fa-signal"></i> Status Bot</h5>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Sesi Aktif</span>
+                    <strong>{{ active_sessions }}</strong>
+                </div>
+                <div class="progress" style="height:8px">
+                    <div class="progress-bar bg-success" style="width:{{ [active_sessions * 10, 100]|min }}%"></div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Pesanan Pending</span>
+                    <strong>{{ pending_orders }}</strong>
+                </div>
+                <div class="progress" style="height:8px">
+                    <div class="progress-bar bg-warning" style="width:{{ [pending_orders * 20, 100]|min }}%"></div>
+                </div>
+            </div>
+            <hr>
+            <p class="text-muted small"><i class="fas fa-circle text-success"></i> Bot aktif & berjalan</p>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Messages -->
+<div class="row g-4 mt-2">
+    <div class="col-12">
+        <div class="data-table">
+            <div class="p-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-history"></i> Pesan Terbaru</h5>
+                <a href="{{ url_for('admin_contacts') }}" class="btn btn-sm btn-outline-success">Lihat Semua</a>
+            </div>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Waktu</th>
+                        <th>Kontak</th>
+                        <th>Arah</th>
+                        <th>Pesan</th>
+                        <th>Bot?</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for msg in recent_messages %}
+                    <tr>
+                        <td>{{ msg.timestamp.strftime('%H:%M:%S') if msg.timestamp else '-' }}</td>
+                        <td>
+                            <a href="{{ url_for('admin_contact_detail', contact_id=msg.contact_id) }}">
+                                {{ msg.contact.name if msg.contact else msg.contact_id }}
+                            </a>
+                        </td>
+                        <td>
+                            {% if msg.direction == 'inbound' %}
+                            <span class="badge bg-primary">Masuk</span>
+                            {% else %}
+                            <span class="badge bg-success">Keluar</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ msg.content[:60] if msg.content else '-' }}{{ '...' if msg.content and msg.content|length > 60 else '' }}</td>
+                        <td>{{ '🤖' if msg.is_bot_response else '👤' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('messageChart').getContext('2d');
+    const chartData = {{ chart_data | tojson }};
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartData.map(d => d.date),
+            datasets: [{
+                label: 'Jumlah Pesan',
+                data: chartData.map(d => d.count),
+                backgroundColor: 'rgba(37, 211, 102, 0.5)',
+                borderColor: '#25D366',
+                borderWidth: 2,
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } },
+            }
+        }
+    });
+</script>
+{% endblock %}

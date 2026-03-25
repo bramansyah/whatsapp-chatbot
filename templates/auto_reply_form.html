@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if reply else 'Tambah' }} Auto Reply - SmartBot{% endblock %}
+
+{% block content %}
+<div class="topbar">
+    <h2><i class="fas fa-robot"></i> {{ 'Edit' if reply else 'Tambah' }} Auto Reply</h2>
+    <a href="{{ url_for('admin_auto_reply_list') }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left"></i> Kembali</a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="form-card">
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Nama Rule</label>
+                    <input type="text" class="form-control" name="name" value="{{ reply.name if reply else '' }}" required placeholder="Contoh: Greeting">
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Tipe Trigger</label>
+                        <select class="form-select" name="trigger_type">
+                            <option value="keyword" {{ 'selected' if reply and reply.trigger_type == 'keyword' else '' }}>Keyword (contains any)</option>
+                            <option value="exact" {{ 'selected' if reply and reply.trigger_type == 'exact' else '' }}>Exact Match</option>
+                            <option value="contains" {{ 'selected' if reply and reply.trigger_type == 'contains' else '' }}>Contains</option>
+                            <option value="regex" {{ 'selected' if reply and reply.trigger_type == 'regex' else '' }}>Regex</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Tipe Respon</label>
+                        <select class="form-select" name="response_type">
+                            <option value="text" {{ 'selected' if reply and reply.response_type == 'text' else '' }}>Text</option>
+                            <option value="image" {{ 'selected' if reply and reply.response_type == 'image' else '' }}>Image</option>
+                            <option value="button" {{ 'selected' if reply and reply.response_type == 'button' else '' }}>Button</option>
+                            <option value="list" {{ 'selected' if reply and reply.response_type == 'list' else '' }}>List</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Trigger Value</label>
+                    <textarea class="form-control" name="trigger_value" rows="2" required>{{ reply.trigger_value if reply else '' }}</textarea>
+                    <small class="text-muted">Untuk keyword: pisahkan dengan koma (halo,hai,hi)</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Response Content</label>
+                    <textarea class="form-control" name="response_content" rows="5" required>{{ reply.response_content if reply else '' }}</textarea>
+                    <small class="text-muted">Gunakan {bot_name} untuk nama bot. *teks* untuk bold.</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Media URL <small class="text-muted">(opsional)</small></label>
+                    <input type="url" class="form-control" name="response_media_url" value="{{ reply.response_media_url if reply else '' }}">
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Prioritas</label>
+                        <input type="number" class="form-control" name="priority" value="{{ reply.priority if reply else 0 }}">
+                    </div>
+                    <div class="col-md-6 mb-3 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_active" {{ 'checked' if (reply and reply.is_active) or not reply else '' }}>
+                            <label class="form-check-label">Aktif</label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Simpan</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

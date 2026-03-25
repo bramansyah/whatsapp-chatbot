@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ contact.name }} - SmartBot{% endblock %}
+
+{% block content %}
+<div class="topbar">
+    <h2><i class="fas fa-user"></i> {{ contact.name }}</h2>
+    <a href="{{ url_for('admin_contacts') }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left"></i> Kembali</a>
+</div>
+
+<div class="row g-4">
+    <!-- Contact Info -->
+    <div class="col-md-4">
+        <div class="form-card mb-3">
+            <h5 class="mb-3">Info Kontak</h5>
+            <table class="table table-sm table-borderless">
+                <tr><td class="text-muted">Nama</td><td><strong>{{ contact.name }}</strong></td></tr>
+                <tr><td class="text-muted">Nomor HP</td><td>{{ contact.phone_number }}</td></tr>
+                <tr><td class="text-muted">Email</td><td>{{ contact.email or '-' }}</td></tr>
+                <tr><td class="text-muted">Total Pesan</td><td>{{ contact.total_messages }}</td></tr>
+                <tr><td class="text-muted">Pertama Chat</td><td>{{ contact.first_contact.strftime('%d/%m/%Y') if contact.first_contact else '-' }}</td></tr>
+                <tr><td class="text-muted">Terakhir Chat</td><td>{{ contact.last_contact.strftime('%d/%m/%Y %H:%M') if contact.last_contact else '-' }}</td></tr>
+                <tr><td class="text-muted">Status</td><td>
+                    {% if contact.is_blocked %}
+                    <span class="badge bg-danger">Diblokir</span>
+                    {% else %}
+                    <span class="badge bg-success">Aktif</span>
+                    {% endif %}
+                </td></tr>
+                <tr><td class="text-muted">Tags</td><td>{{ contact.tags or '-' }}</td></tr>
+            </table>
+
+            <div class="d-flex gap-2">
+                <form method="POST" action="{{ url_for('admin_block_contact', contact_id=contact.id) }}">
+                    <button class="btn btn-sm {{ 'btn-success' if contact.is_blocked else 'btn-danger' }}">
+                        <i class="fas {{ 'fa-unlock' if contact.is_blocked else 'fa-ban' }}"></i>
+                        {{ 'Unblock' if contact.is_blocked else 'Block' }}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Orders -->
+        {% if orders %}
+        <div class="form-card">
+            <h5 class="mb-3">Pesanan</h5>
+            {% for o in orders %}
+            <div class="border rounded p-2 mb-2">
+                <small class="text-muted">{{ o.order_number }}</small><br>
+                <span class="badge-status badge-{{ o.status }}">{{ o.status }}</span>
+                <span class="float-end">Rp {{ '{:,.0f}'.format(o.total_price) }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Chat History -->
+    <div class="col-md-8">
+        <div class="form-card">
+            <h5 class="mb-3"><i class="fas fa-comments"></i> Riwayat Chat</h5>
+
+            <div class="chat-container d-flex flex-column" id="chatContainer">
+                {% for msg in messages|reverse %}
+                <div class="chat-bubble {{ 'chat-outbound' if msg.direction == 'outbound' else 'chat-inbound' }}">
+                    <div>{{ msg.content or '[media]' }}</div>
+                    <div class="chat-time">
+                        {{ msg.timestamp.strftime('%H:%M') if msg.timestamp else '' }}
+                        {% if msg.is_bot_response %} 🤖{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Send Message -->
+            <form method="POST" action="{{ url_for('admin_send_message', contact_id=contact.id) }}" class="mt-3">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="message" placeholder="Ketik pesan..." required>
+                    <button class="btn btn-success"><i class="fas fa-paper-plane"></i> Kirim</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto scroll to bottom
+    const chat = document.getElementById('chatContainer');
+    chat.scrollTop = chat.scrollHeight;
+</script>
+{% endblock %}

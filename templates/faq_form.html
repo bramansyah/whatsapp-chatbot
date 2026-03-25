@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if faq else 'Tambah' }} FAQ - SmartBot{% endblock %}
+
+{% block content %}
+<div class="topbar">
+    <h2><i class="fas fa-question-circle"></i> {{ 'Edit' if faq else 'Tambah' }} FAQ</h2>
+    <a href="{{ url_for('admin_faq_list') }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left"></i> Kembali</a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="form-card">
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Kategori</label>
+                    <input type="text" class="form-control" name="category" value="{{ faq.category if faq else 'Umum' }}" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Pertanyaan</label>
+                    <textarea class="form-control" name="question" rows="2" required>{{ faq.question if faq else '' }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Jawaban</label>
+                    <textarea class="form-control" name="answer" rows="5" required>{{ faq.answer if faq else '' }}</textarea>
+                    <small class="text-muted">Gunakan *teks* untuk bold, \n untuk baris baru</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Keywords <small class="text-muted">(pisahkan dengan koma)</small></label>
+                    <input type="text" class="form-control" name="keywords" value="{{ faq.keywords if faq else '' }}" required placeholder="kata1,kata2,kata3">
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Prioritas</label>
+                        <input type="number" class="form-control" name="priority" value="{{ faq.priority if faq else 0 }}">
+                    </div>
+                    <div class="col-md-6 mb-3 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_active" {{ 'checked' if (faq and faq.is_active) or not faq else '' }}>
+                            <label class="form-check-label">Aktif</label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Simpan</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
